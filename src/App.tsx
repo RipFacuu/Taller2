@@ -48,7 +48,7 @@ function App() {
               <div className="bg-blue-100 p-4 rounded-full text-blue-600">
                 <Car size={48} />
               </div>
-              <span className="text-2xl font-bold text-gray-800">61</span>
+              <span className="text-2xl font-bold text-gray-800">G1</span>
             </button>
 
             <button
