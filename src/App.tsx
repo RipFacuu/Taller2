@@ -34,7 +34,7 @@ function App() {
         <header className="bg-white shadow-md border-b-2 border-gray-300 py-6">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <h1 className="text-3xl font-bold text-gray-800">
-              PanCar
+              PenCar
             </h1>
           </div>
         </header>
