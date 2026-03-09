@@ -28,6 +28,7 @@ export default function NotebookForm({
   const [items, setItems] = useState<ServiceItem[]>([
     { description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0 }
   ]);
+  const [total, setTotal] = useState('');
   const [payment, setPayment] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [saving, setSaving] = useState(false);
@@ -41,6 +42,7 @@ export default function NotebookForm({
       setModel(editRecord.model || '');
       setPlate(editRecord.plate || '');
       setKilometers(editRecord.kilometers?.toString() || '');
+      setTotal(editRecord.total?.toString() || '');
       setPayment(editRecord.payment?.toString() || '');
       setPaymentMethod(editRecord.payment_method || '');
       
@@ -50,11 +52,12 @@ export default function NotebookForm({
     } else {
       // Default item for new records
       setItems([{ description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0 }]);
+      setTotal('');
     }
   }, [editRecord, editItems]);
 
-  const total = items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const balance = total - (Number(payment) || 0);
+  const numericTotal = Number(total) || 0;
+  const balance = numericTotal - (Number(payment) || 0);
 
   const addItem = () => {
     const lastDate = items.length > 0 ? items[items.length - 1].date : new Date().toISOString().split('T')[0];
@@ -88,7 +91,7 @@ export default function NotebookForm({
         model,
         plate,
         kilometers: Number(kilometers) || 0,
-        total,
+        total: numericTotal,
         payment: Number(payment) || 0,
         payment_method: paymentMethod,
         balance
@@ -308,16 +311,6 @@ export default function NotebookForm({
                       className="w-full bg-transparent outline-none px-2 py-1 text-gray-700"
                     />
                   </div>
-                  <div className="w-32 relative">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                    <input
-                      type="number"
-                      value={item.amount || ''}
-                      onChange={(e) => updateItem(index, 'amount', Number(e.target.value))}
-                      placeholder="0"
-                      className="w-full bg-transparent outline-none pl-6 pr-2 py-1 text-right font-semibold text-gray-800"
-                    />
-                  </div>
                   {items.length > 1 && (
                     <button
                       onClick={() => removeItem(index)}
@@ -333,9 +326,18 @@ export default function NotebookForm({
 
           <div className="flex justify-end border-t pt-8">
             <div className="w-80 space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-800 rounded-lg text-white">
-                <span className="font-bold">TOTAL:</span>
-                <span className="text-2xl font-black">$ {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+              <div className="p-3 bg-gray-800 rounded-lg text-white space-y-2">
+                <span className="font-bold block">TOTAL:</span>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-sm">$</span>
+                  <input
+                    type="number"
+                    value={total}
+                    onChange={(e) => setTotal(e.target.value)}
+                    placeholder="0"
+                    className="w-full bg-gray-900/40 border border-gray-600 rounded-lg outline-none pl-7 pr-3 py-2 text-right font-black text-2xl tracking-wide"
+                  />
+                </div>
               </div>
 
               <div className="p-4 bg-white border-2 border-gray-100 rounded-xl space-y-4">
