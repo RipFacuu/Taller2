@@ -27,7 +27,7 @@ export default function SparePartsManager() {
       const { data, error } = await supabase
         .from('spare_parts')
         .select('*')
-        .order('date', { ascending: true });
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       setParts(data || []);
