@@ -13,7 +13,8 @@ export default function SparePartsManager() {
   const [editForm, setEditForm] = useState<Partial<SparePart>>({
     date: new Date().toISOString().split('T')[0],
     description: '',
-    cost: 0
+    cost: 0,
+    quantity: 1
   });
 
   useEffect(() => {
@@ -73,7 +74,8 @@ export default function SparePartsManager() {
           .update({
             date: editForm.date,
             description: editForm.description,
-            cost: Number(editForm.cost) || 0
+            cost: Number(editForm.cost) || 0,
+            quantity: Number(editForm.quantity) || 1
           })
           .eq('id', id);
 
@@ -85,7 +87,8 @@ export default function SparePartsManager() {
           .insert([{
             date: editForm.date,
             description: editForm.description,
-            cost: Number(editForm.cost) || 0
+            cost: Number(editForm.cost) || 0,
+            quantity: Number(editForm.quantity) || 1
           }]);
 
         if (error) throw error;
@@ -151,9 +154,10 @@ export default function SparePartsManager() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-800 text-white uppercase text-xs font-bold tracking-wider">
-                <th className="px-6 py-4 border-r border-gray-700 w-40">Fecha</th>
+                <th className="px-6 py-4 border-r border-gray-700 w-32">Fecha</th>
                 <th className="px-6 py-4 border-r border-gray-700">Repuesto</th>
-                <th className="px-6 py-4 border-r border-gray-700 w-52">Costo</th>
+                <th className="px-6 py-4 border-r border-gray-700 w-24 text-center">Cantidad</th>
+                <th className="px-6 py-4 border-r border-gray-700 w-40">Costo</th>
                 <th className="px-6 py-4 w-32 text-center">Acciones</th>
               </tr>
             </thead>
@@ -175,6 +179,17 @@ export default function SparePartsManager() {
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                       placeholder="Descripción del repuesto..."
                       className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
+                    />
+                  </td>
+                  <td className="px-4 py-3 border-r text-center">
+                    <input
+                      type="number"
+                      min={1}
+                      value={editForm.quantity ?? 1}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, quantity: Number(e.target.value) })
+                      }
+                      className="w-20 bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500 text-center font-semibold"
                     />
                   </td>
                   <td className="px-4 py-3 border-r">
@@ -229,6 +244,17 @@ export default function SparePartsManager() {
                             className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
                           />
                         </td>
+                        <td className="px-4 py-3 border-r text-center">
+                          <input
+                            type="number"
+                            min={1}
+                            value={editForm.quantity ?? 1}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, quantity: Number(e.target.value) })
+                            }
+                            className="w-20 bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500 text-center font-semibold"
+                          />
+                        </td>
                         <td className="px-4 py-3 border-r">
                           <div className="relative">
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">$</span>
@@ -258,6 +284,9 @@ export default function SparePartsManager() {
                         </td>
                         <td className="px-6 py-4 border-r border-gray-100 text-gray-800 font-semibold">
                           {part.description}
+                        </td>
+                        <td className="px-6 py-4 border-r border-gray-100 text-center text-gray-800 font-semibold">
+                          {part.quantity ?? 1}
                         </td>
                         <td className="px-6 py-4 border-r border-gray-100 text-right font-bold text-gray-900">
                           {formatCurrency(part.cost)}

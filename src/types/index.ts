@@ -30,6 +30,7 @@ export interface SparePart {
   date: string;
   description: string;
   cost: number;
+  quantity?: number;
   created_at?: string;
 }
 
