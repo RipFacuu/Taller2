@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Save, Edit2, X, Check } from 'lucide-react';
+import { Plus, Trash2, Save, Edit2, X, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { SparePart } from '../types';
 
@@ -8,6 +8,7 @@ export default function SparePartsManager() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
 
   // Form states for adding/editing
   const [editForm, setEditForm] = useState<Partial<SparePart>>({
@@ -128,6 +129,177 @@ export default function SparePartsManager() {
     }).format(amount);
   };
 
+  const renderPartRows = () => {
+    if (parts.length === 0 && !isAdding) {
+      return (
+        <tr>
+          <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic">
+            No hay repuestos registrados. Haga clic en "Agregar Repuesto" para comenzar.
+          </td>
+        </tr>
+      );
+    }
+
+    const rows: JSX.Element[] = [];
+
+    // Agrupar por fecha manteniendo el orden original
+    const groups: { date: string; items: SparePart[] }[] = [];
+    let currentDate = '';
+
+    parts.forEach((part) => {
+      if (part.date !== currentDate) {
+        currentDate = part.date;
+        groups.push({ date: currentDate, items: [part] });
+      } else {
+        groups[groups.length - 1].items.push(part);
+      }
+    });
+
+    const toggleDate = (date: string) => {
+      setExpandedDates((prev) => ({
+        ...prev,
+        [date]: !(prev[date] ?? true),
+      }));
+    };
+
+    groups.forEach((group) => {
+      const isExpanded = expandedDates[group.date] ?? true;
+
+      rows.push(
+        <tr
+          key={`separator-${group.date}`}
+          className="bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors"
+          onClick={() => toggleDate(group.date)}
+        >
+          <td
+            colSpan={5}
+            className="px-6 py-2 text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2"
+          >
+            {isExpanded ? (
+              <ChevronDown size={14} className="text-gray-500" />
+            ) : (
+              <ChevronRight size={14} className="text-gray-500" />
+            )}
+            <span>
+              {new Date(group.date + 'T00:00:00').toLocaleDateString('es-AR', {
+                day: 'numeric',
+                month: 'numeric',
+              })}
+            </span>
+            <span className="ml-2 text-[10px] font-semibold text-gray-500">
+              ({group.items.length} repuesto{group.items.length !== 1 ? 's' : ''})
+            </span>
+          </td>
+        </tr>
+      );
+
+      if (!isExpanded) {
+        return;
+      }
+
+      group.items.forEach((part) => {
+        rows.push(
+          <tr key={part.id} className="hover:bg-gray-50 transition-colors">
+            {editingId === part.id ? (
+              <>
+              <td className="px-4 py-3 border-r">
+                <input
+                  type="date"
+                  value={editForm.date}
+                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
+                />
+              </td>
+              <td className="px-4 py-3 border-r">
+                <input
+                  type="text"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
+                />
+              </td>
+              <td className="px-4 py-3 border-r text-center">
+                <input
+                  type="number"
+                  min={1}
+                  value={editForm.quantity ?? 1}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, quantity: Number(e.target.value) })
+                  }
+                  className="w-20 bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500 text-center font-semibold"
+                />
+              </td>
+              <td className="px-4 py-3 border-r">
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                  <input
+                    type="number"
+                    value={editForm.cost || ''}
+                    onChange={(e) => setEditForm({ ...editForm, cost: Number(e.target.value) })}
+                    className="w-full bg-white border-2 border-blue-300 rounded pl-6 pr-2 py-1 outline-none focus:border-blue-500 text-right font-semibold"
+                  />
+                </div>
+              </td>
+              <td className="px-4 py-3 text-center">
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => handleSave(part.id)}
+                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 shadow-sm"
+                  >
+                    <Check size={18} />
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    className="p-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 shadow-sm"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </td>
+              </>
+            ) : (
+              <>
+              <td className="px-6 py-4 border-r border-gray-100 text-gray-600 font-medium">
+                {new Date(part.date + 'T00:00:00').toLocaleDateString('es-AR', {
+                  day: 'numeric',
+                  month: 'numeric',
+                })}
+              </td>
+              <td className="px-6 py-4 border-r border-gray-100 text-gray-800 font-semibold">
+                {part.description}
+              </td>
+              <td className="px-6 py-4 border-r border-gray-100 text-center text-gray-800 font-semibold">
+                {part.quantity ?? 1}
+              </td>
+              <td className="px-6 py-4 border-r border-gray-100 text-right font-bold text-gray-900">
+                {formatCurrency(part.cost)}
+              </td>
+              <td className="px-6 py-4 text-center">
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => startEditing(part)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(part.id!)}
+                    className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </td>
+              </>
+            )}
+          </tr>
+        );
+      });
+    });
+
+    return rows;
+  };
+
   if (loading && parts.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500">
@@ -217,101 +389,7 @@ export default function SparePartsManager() {
                 </tr>
               )}
 
-              {parts.length === 0 && !isAdding ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500 italic">
-                    No hay repuestos registrados. Haga clic en "Agregar Repuesto" para comenzar.
-                  </td>
-                </tr>
-              ) : (
-                parts.map((part) => (
-                  <tr key={part.id} className="hover:bg-gray-50 transition-colors">
-                    {editingId === part.id ? (
-                      <>
-                        <td className="px-4 py-3 border-r">
-                          <input
-                            type="date"
-                            value={editForm.date}
-                            onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                            className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-r">
-                          <input
-                            type="text"
-                            value={editForm.description}
-                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                            className="w-full bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-r text-center">
-                          <input
-                            type="number"
-                            min={1}
-                            value={editForm.quantity ?? 1}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, quantity: Number(e.target.value) })
-                            }
-                            className="w-20 bg-white border-2 border-blue-300 rounded px-2 py-1 outline-none focus:border-blue-500 text-center font-semibold"
-                          />
-                        </td>
-                        <td className="px-4 py-3 border-r">
-                          <div className="relative">
-                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                            <input
-                              type="number"
-                              value={editForm.cost || ''}
-                              onChange={(e) => setEditForm({ ...editForm, cost: Number(e.target.value) })}
-                              className="w-full bg-white border-2 border-blue-300 rounded pl-6 pr-2 py-1 outline-none focus:border-blue-500 text-right font-semibold"
-                            />
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex justify-center gap-2">
-                            <button onClick={() => handleSave(part.id)} className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 shadow-sm">
-                              <Check size={18} />
-                            </button>
-                            <button onClick={cancelEditing} className="p-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 shadow-sm">
-                              <X size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-6 py-4 border-r border-gray-100 text-gray-600 font-medium">
-                          {new Date(part.date + 'T00:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' })}
-                        </td>
-                        <td className="px-6 py-4 border-r border-gray-100 text-gray-800 font-semibold">
-                          {part.description}
-                        </td>
-                        <td className="px-6 py-4 border-r border-gray-100 text-center text-gray-800 font-semibold">
-                          {part.quantity ?? 1}
-                        </td>
-                        <td className="px-6 py-4 border-r border-gray-100 text-right font-bold text-gray-900">
-                          {formatCurrency(part.cost)}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => startEditing(part)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(part.id!)}
-                              className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))
-              )}
+              {renderPartRows()}
             </tbody>
           </table>
         </div>
