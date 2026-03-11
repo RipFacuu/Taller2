@@ -163,7 +163,7 @@ export default function SparePartsManager() {
     };
 
     groups.forEach((group) => {
-      const isExpanded = expandedDates[group.date] ?? true;
+      const isExpanded = expandedDates[group.date] ?? false;
 
       rows.push(
         <tr
