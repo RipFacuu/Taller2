@@ -158,7 +158,7 @@ export default function SparePartsManager() {
     const toggleDate = (date: string) => {
       setExpandedDates((prev) => ({
         ...prev,
-        [date]: !(prev[date] ?? true),
+        [date]: !prev[date],
       }));
     };
 
