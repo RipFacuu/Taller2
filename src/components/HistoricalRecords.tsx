@@ -50,7 +50,8 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
         .from('service_items')
         .select('*')
         .eq('service_record_id', recordId)
-        .order('order_index');
+        .order('date', { ascending: true }) // Order by date from oldest to newest
+        .order('order_index', { ascending: true });
 
       if (error) throw error;
       setItems(data || []);
@@ -243,45 +244,43 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
                 <div className="mb-8">
                   <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1">Trabajos Realizados</h4>
                   <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-                    {(() => {
-                      const rows: JSX.Element[] = [];
-                      let lastDate = '';
-
-                      items.forEach((item, index) => {
-                        const isNewDate = item.date !== lastDate;
-                        if (isNewDate) {
-                          rows.push(
-                            <div
-                              key={`date-${item.date}`}
-                              className="px-4 py-2 bg-gray-100 border-b border-gray-200 text-[11px] font-bold text-gray-600 uppercase tracking-wider"
-                            >
-                              {new Date(item.date + 'T00:00:00').toLocaleDateString('es-AR')}
-                            </div>
-                          );
-                          lastDate = item.date;
-                        }
-
-                        rows.push(
-                          <div
-                            key={item.id}
-                            className={`flex flex-col px-4 py-3 bg-white ${
-                              index !== items.length - 1 ? 'border-b border-gray-200' : ''
-                            }`}
-                          >
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-700 font-medium">{item.description}</span>
-                              {typeof item.kilometers === 'number' && item.kilometers > 0 && (
-                                <span className="text-xs font-semibold text-gray-500 ml-4">
-                                  {item.kilometers.toLocaleString('es-AR')} km
-                                </span>
-                              )}
-                            </div>
+                    {Object.entries(
+                      items.reduce((acc, item) => {
+                        if (!acc[item.date]) acc[item.date] = [];
+                        acc[item.date].push(item);
+                        return acc;
+                      }, {} as Record<string, typeof items>)
+                    )
+                      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB)) // Sort dates oldest to newest
+                      .map(([date, dayItems]) => (
+                        <div key={date} className="border-b last:border-b-0 border-gray-200">
+                          <div className="bg-gray-100 px-4 py-1.5 border-b border-gray-200">
+                            <span className="text-[10px] font-black text-gray-500 uppercase">
+                              {new Date(date + 'T00:00:00').toLocaleDateString('es-AR')}
+                            </span>
                           </div>
-                        );
-                      });
-
-                      return rows;
-                    })()}
+                          {dayItems.map((item, idx) => (
+                            <div
+                              key={item.id || idx}
+                              className={`flex justify-between items-center px-4 py-3 bg-white ${
+                                idx !== dayItems.length - 1 ? 'border-b border-gray-50' : ''
+                              }`}
+                            >
+                              <span className="text-gray-700 font-medium">{item.description}</span>
+                              <div className="flex flex-col items-end">
+                                <span className="font-bold text-gray-900 ml-4">
+                                  $ {item.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                </span>
+                                {item.kilometers ? (
+                                  <span className="text-[10px] text-gray-400 font-mono mt-0.5">
+                                    {item.kilometers.toLocaleString()} km
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
