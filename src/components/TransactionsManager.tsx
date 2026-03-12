@@ -154,11 +154,11 @@ export default function TransactionsManager() {
               <tr className="bg-gray-100 text-gray-700 uppercase text-[10px] font-black tracking-widest border-b-2 border-gray-200">
                 <th className="px-4 py-4 w-12"></th>
                 <th className="px-4 py-4">Descripción</th>
-                <th className="px-4 py-4 text-right text-blue-700">Cuentas/Cobros</th>
-                <th className="px-4 py-4 text-right text-green-700">Repuestos (Ing)</th>
-                <th className="px-4 py-4 text-right text-emerald-700">Entradas (Gral)</th>
-                <th className="px-4 py-4 text-right text-red-700">Gastos Taller</th>
-                <th className="px-4 py-4 text-right text-orange-700">Repuestos (Gasto)</th>
+                <th className="px-4 py-4 text-right text-blue-700">Entradas cuentas</th>
+                <th className="px-4 py-4 text-right text-green-700">Cobros repuestos</th>
+                <th className="px-4 py-4 text-right text-emerald-700">Entradas</th>
+                <th className="px-4 py-4 text-right text-red-700">Gastos taller</th>
+                <th className="px-4 py-4 text-right text-orange-700">Repuestos</th>
                 <th className="px-4 py-4 w-24 text-center">Acciones</th>
               </tr>
             </thead>
