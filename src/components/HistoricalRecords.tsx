@@ -254,10 +254,15 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
                       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB)) // Sort dates oldest to newest
                       .map(([date, dayItems]) => (
                         <div key={date} className="border-b last:border-b-0 border-gray-200">
-                          <div className="bg-gray-100 px-4 py-1.5 border-b border-gray-200">
+                          <div className="bg-gray-100 px-4 py-1.5 border-b border-gray-200 flex justify-between items-center">
                             <span className="text-[10px] font-black text-gray-500 uppercase">
                               {new Date(date + 'T00:00:00').toLocaleDateString('es-AR')}
                             </span>
+                            {dayItems[0]?.kilometers ? (
+                              <span className="text-[10px] text-gray-500 font-bold uppercase">
+                                {dayItems[0].kilometers.toLocaleString('es-AR')} km
+                              </span>
+                            ) : null}
                           </div>
                           {dayItems.map((item, idx) => (
                             <div
@@ -267,16 +272,6 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
                               }`}
                             >
                               <span className="text-gray-700 font-medium">{item.description}</span>
-                              <div className="flex flex-col items-end">
-                                <span className="font-bold text-gray-900 ml-4">
-                                  $ {item.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                                </span>
-                                {item.kilometers ? (
-                                  <span className="text-[10px] text-gray-400 font-mono mt-0.5">
-                                    {item.kilometers.toLocaleString()} km
-                                  </span>
-                                ) : null}
-                              </div>
                             </div>
                           ))}
                         </div>
