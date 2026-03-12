@@ -35,4 +35,16 @@ export interface SparePart {
   created_at?: string;
 }
 
+export interface Transaction {
+  id?: string;
+  date: string;
+  description: string;
+  accounts_receivable: number; // Entradas Cuentas / Cobros
+  spare_parts_income: number;   // Repuestos (Ingreso)
+  general_income: number;       // Entradas (Gral)
+  workshop_expenses: number;    // Gastos Taller
+  spare_parts_expense: number;  // Repuestos (Gasto)
+  created_at?: string;
+}
+
 export type Category = 'G1' | 'Camioneros';

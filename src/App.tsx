@@ -3,6 +3,7 @@ import { FileText, Clock, TrendingUp, Package, Truck, Car, ChevronLeft } from 'l
 import NotebookForm from './components/NotebookForm';
 import HistoricalRecords from './components/HistoricalRecords';
 import SparePartsManager from './components/SparePartsManager';
+import TransactionsManager from './components/TransactionsManager';
 import type { Category } from './types';
 
 type Section = 'nueva-ficha' | 'historial' | 'gastos' | 'repuestos';
@@ -146,15 +147,7 @@ function App() {
             <HistoricalRecords category={activeCategory} />
           )}
           {activeSection === 'gastos' && (
-            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-              <TrendingUp size={48} className="mx-auto mb-4 text-gray-400" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Gastos/Entradas
-              </h2>
-              <p className="text-gray-600">
-                Esta sección estará disponible próximamente
-              </p>
-            </div>
+            <TransactionsManager />
           )}
           {activeSection === 'repuestos' && (
             <SparePartsManager />
