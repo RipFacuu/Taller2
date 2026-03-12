@@ -247,9 +247,6 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
                       <div key={item.id} className={`flex flex-col px-4 py-3 ${index !== items.length - 1 ? 'border-b border-gray-200' : ''} bg-white`}>
                         <div className="flex justify-between items-center">
                           <span className="text-gray-700 font-medium">{item.description}</span>
-                          <span className="font-bold text-gray-900 ml-4">
-                            $ {item.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                          </span>
                         </div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase mt-1">
                           {new Date(item.date + 'T00:00:00').toLocaleDateString('es-AR')}
