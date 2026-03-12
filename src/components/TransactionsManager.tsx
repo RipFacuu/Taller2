@@ -150,7 +150,7 @@ export default function TransactionsManager() {
             <thead>
               <tr className="bg-gray-100 text-gray-700 uppercase text-[10px] font-black tracking-widest border-b-2 border-gray-200">
                 <th className="px-4 py-4 w-12"></th>
-                <th className="px-4 py-4">Descripción</th>
+                <th className="px-4 py-4">Entradas cuentas</th>
                 <th className="px-4 py-4 text-right text-green-700">Cobros repuestos</th>
                 <th className="px-4 py-4 text-right text-emerald-700">Entradas</th>
                 <th className="px-4 py-4 text-right text-red-700">Gastos taller</th>
