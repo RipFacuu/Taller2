@@ -243,16 +243,45 @@ export default function HistoricalRecords({ category }: HistoricalRecordsProps) 
                 <div className="mb-8">
                   <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1">Trabajos Realizados</h4>
                   <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-                    {items.map((item, index) => (
-                      <div key={item.id} className={`flex flex-col px-4 py-3 ${index !== items.length - 1 ? 'border-b border-gray-200' : ''} bg-white`}>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-700 font-medium">{item.description}</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase mt-1">
-                          {new Date(item.date + 'T00:00:00').toLocaleDateString('es-AR')}
-                        </span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const rows: JSX.Element[] = [];
+                      let lastDate = '';
+
+                      items.forEach((item, index) => {
+                        const isNewDate = item.date !== lastDate;
+                        if (isNewDate) {
+                          rows.push(
+                            <div
+                              key={`date-${item.date}`}
+                              className="px-4 py-2 bg-gray-100 border-b border-gray-200 text-[11px] font-bold text-gray-600 uppercase tracking-wider"
+                            >
+                              {new Date(item.date + 'T00:00:00').toLocaleDateString('es-AR')}
+                            </div>
+                          );
+                          lastDate = item.date;
+                        }
+
+                        rows.push(
+                          <div
+                            key={item.id}
+                            className={`flex flex-col px-4 py-3 bg-white ${
+                              index !== items.length - 1 ? 'border-b border-gray-200' : ''
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-700 font-medium">{item.description}</span>
+                              {typeof item.kilometers === 'number' && item.kilometers > 0 && (
+                                <span className="text-xs font-semibold text-gray-500 ml-4">
+                                  {item.kilometers.toLocaleString('es-AR')} km
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      });
+
+                      return rows;
+                    })()}
                   </div>
                 </div>
               )}

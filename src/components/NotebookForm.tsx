@@ -26,7 +26,7 @@ export default function NotebookForm({
   const [plate, setPlate] = useState('');
   const [kilometers, setKilometers] = useState('');
   const [items, setItems] = useState<ServiceItem[]>([
-    { description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0 }
+    { description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0, kilometers: 0 }
   ]);
   const [total, setTotal] = useState('');
   const [payment, setPayment] = useState('');
@@ -51,7 +51,7 @@ export default function NotebookForm({
       }
     } else {
       // Default item for new records
-      setItems([{ description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0 }]);
+      setItems([{ description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0, kilometers: 0 }]);
       setTotal('');
     }
   }, [editRecord, editItems]);
@@ -60,8 +60,21 @@ export default function NotebookForm({
   const balance = numericTotal - (Number(payment) || 0);
 
   const addItem = () => {
-    const lastDate = items.length > 0 ? items[items.length - 1].date : new Date().toISOString().split('T')[0];
-    setItems([...items, { description: '', amount: 0, date: lastDate, order_index: items.length }]);
+    const today = new Date().toISOString().split('T')[0];
+    const lastItem = items[items.length - 1];
+    const lastDate = lastItem?.date || today;
+    const lastKm = typeof lastItem?.kilometers === 'number' ? lastItem.kilometers : 0;
+
+    setItems([
+      ...items,
+      {
+        description: '',
+        amount: 0,
+        date: lastDate,
+        order_index: items.length,
+        kilometers: lastKm,
+      },
+    ]);
   };
 
   const removeItem = (index: number) => {
@@ -72,6 +85,14 @@ export default function NotebookForm({
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     setItems(newItems);
+  };
+
+  const updateKilometersForDate = (date: string, value: number) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.date === date ? { ...item, kilometers: value } : item
+      )
+    );
   };
 
   const handleSave = async () => {
@@ -135,7 +156,8 @@ export default function NotebookForm({
           description: item.description,
           amount: Number(item.amount) || 0,
           date: item.date,
-          order_index: index
+          order_index: index,
+          kilometers: Number(item.kilometers) || 0
         }));
 
       if (itemsToInsert.length > 0) {
@@ -154,7 +176,7 @@ export default function NotebookForm({
         setModel('');
         setPlate('');
         setKilometers('');
-        setItems([{ description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0 }]);
+        setItems([{ description: '', amount: 0, date: new Date().toISOString().split('T')[0], order_index: 0, kilometers: 0 }]);
         setPayment('');
         setPaymentMethod('');
       }
@@ -292,35 +314,56 @@ export default function NotebookForm({
             </div>
 
             <div className="space-y-3 bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-200">
-              {items.map((item, index) => (
-                <div key={index} className="flex gap-3 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                  <div className="w-32">
-                    <input
-                      type="date"
-                      value={item.date}
-                      onChange={(e) => updateItem(index, 'date', e.target.value)}
-                      className="w-full bg-transparent outline-none px-2 py-1 text-xs font-semibold text-gray-500"
-                    />
+              {items.map((item, index) => {
+                const prev = items[index - 1];
+                const showKm = index === 0 || prev.date !== item.date;
+
+                return (
+                  <div key={index} className="flex gap-3 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="w-32">
+                      <input
+                        type="date"
+                        value={item.date}
+                        onChange={(e) => updateItem(index, 'date', e.target.value)}
+                        className="w-full bg-transparent outline-none px-2 py-1 text-xs font-semibold text-gray-500"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={item.description}
+                        onChange={(e) => updateItem(index, 'description', e.target.value)}
+                        placeholder="Descripción del trabajo o repuesto"
+                        className="w-full bg-transparent outline-none px-2 py-1 text-gray-700"
+                      />
+                    </div>
+                    <div className="w-32">
+                      {showKm && (
+                        <input
+                          type="number"
+                          value={item.kilometers ?? ''}
+                          onChange={(e) =>
+                            updateKilometersForDate(
+                              item.date,
+                              Number(e.target.value)
+                            )
+                          }
+                          placeholder="Km"
+                          className="w-full bg-transparent outline-none px-2 py-1 text-xs font-semibold text-gray-500 text-right"
+                        />
+                      )}
+                    </div>
+                    {items.length > 1 && (
+                      <button
+                        onClick={() => removeItem(index)}
+                        className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      placeholder="Descripción del trabajo o repuesto"
-                      className="w-full bg-transparent outline-none px-2 py-1 text-gray-700"
-                    />
-                  </div>
-                  {items.length > 1 && (
-                    <button
-                      onClick={() => removeItem(index)}
-                      className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

@@ -5,6 +5,7 @@ export interface ServiceItem {
   amount: number;
   date: string;
   order_index: number;
+   kilometers?: number;
 }
 
 export interface ServiceRecord {
