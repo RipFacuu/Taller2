@@ -39,7 +39,6 @@ export interface Transaction {
   id?: string;
   date: string;
   description: string;
-  accounts_receivable: number; // Entradas cuentas
   spare_parts_income: number;   // Cobros repuestos
   general_income: number;       // Entradas
   workshop_expenses: number;    // Gastos taller

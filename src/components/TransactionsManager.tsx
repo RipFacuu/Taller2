@@ -14,7 +14,6 @@ export default function TransactionsManager() {
   const [form, setForm] = useState<Partial<Transaction>>({
     date: new Date().toISOString().split('T')[0],
     description: '',
-    accounts_receivable: 0,
     spare_parts_income: 0,
     general_income: 0,
     workshop_expenses: 0,
@@ -59,7 +58,6 @@ export default function TransactionsManager() {
       const dataToSave = {
         date: form.date,
         description: form.description,
-        accounts_receivable: Number(form.accounts_receivable) || 0,
         spare_parts_income: Number(form.spare_parts_income) || 0,
         general_income: Number(form.general_income) || 0,
         workshop_expenses: Number(form.workshop_expenses) || 0,
@@ -134,7 +132,6 @@ export default function TransactionsManager() {
               setForm({
                 date: new Date().toISOString().split('T')[0],
                 description: '',
-                accounts_receivable: 0,
                 spare_parts_income: 0,
                 general_income: 0,
                 workshop_expenses: 0,
@@ -154,7 +151,6 @@ export default function TransactionsManager() {
               <tr className="bg-gray-100 text-gray-700 uppercase text-[10px] font-black tracking-widest border-b-2 border-gray-200">
                 <th className="px-4 py-4 w-12"></th>
                 <th className="px-4 py-4">Descripción</th>
-                <th className="px-4 py-4 text-right text-blue-700">Entradas cuentas</th>
                 <th className="px-4 py-4 text-right text-green-700">Cobros repuestos</th>
                 <th className="px-4 py-4 text-right text-emerald-700">Entradas</th>
                 <th className="px-4 py-4 text-right text-red-700">Gastos taller</th>
@@ -179,14 +175,6 @@ export default function TransactionsManager() {
                       onChange={(e) => setForm({...form, description: e.target.value})}
                       placeholder="Descripción..."
                       className="w-full bg-white border-2 border-blue-200 rounded px-2 py-1 outline-none focus:border-blue-500 font-semibold"
-                    />
-                  </td>
-                  <td className="px-2 py-3">
-                    <input
-                      type="number"
-                      value={form.accounts_receivable || ''}
-                      onChange={(e) => setForm({...form, accounts_receivable: Number(e.target.value)})}
-                      className="w-full text-right border-2 border-blue-200 rounded px-2 py-1 font-bold text-blue-700"
                     />
                   </td>
                   <td className="px-2 py-3">
@@ -240,12 +228,11 @@ export default function TransactionsManager() {
                 
                 // Calculate subtotals
                 const subtotals = dayTransactions.reduce((acc, t) => ({
-                  ar: acc.ar + t.accounts_receivable,
                   spi: acc.spi + t.spare_parts_income,
                   gi: acc.gi + t.general_income,
                   we: acc.we + t.workshop_expenses,
                   spe: acc.spe + t.spare_parts_expense
-                }), { ar: 0, spi: 0, gi: 0, we: 0, spe: 0 });
+                }), { spi: 0, gi: 0, we: 0, spe: 0 });
 
                 return (
                   <div key={date} className="contents">
@@ -256,7 +243,7 @@ export default function TransactionsManager() {
                       <td className="px-4 py-3 text-gray-400">
                         {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                       </td>
-                      <td colSpan={7} className="px-2 py-3">
+                      <td colSpan={6} className="px-2 py-3">
                         <span className="text-sm font-black text-gray-800 tracking-tighter uppercase">
                           {new Date(date + 'T00:00:00').toLocaleDateString('es-AR', { 
                             weekday: 'long', 
@@ -279,14 +266,6 @@ export default function TransactionsManager() {
                                 value={form.description}
                                 onChange={(e) => setForm({...form, description: e.target.value})}
                                 className="w-full border-2 border-blue-200 rounded px-2 py-1 outline-none font-semibold"
-                              />
-                            </td>
-                            <td className="px-2 py-2">
-                              <input
-                                type="number"
-                                value={form.accounts_receivable || ''}
-                                onChange={(e) => setForm({...form, accounts_receivable: Number(e.target.value)})}
-                                className="w-full text-right border-2 border-blue-200 rounded px-2 py-1 font-bold text-blue-700"
                               />
                             </td>
                             <td className="px-2 py-2">
@@ -335,9 +314,6 @@ export default function TransactionsManager() {
                         ) : (
                           <>
                             <td className="px-4 py-3 text-gray-700 font-medium">{t.description}</td>
-                            <td className={`px-4 py-3 text-right font-bold ${t.accounts_receivable > 0 ? 'text-blue-600' : 'text-gray-300'}`}>
-                              {t.accounts_receivable > 0 ? formatCurrency(t.accounts_receivable) : '-'}
-                            </td>
                             <td className={`px-4 py-3 text-right font-bold ${t.spare_parts_income > 0 ? 'text-green-600' : 'text-gray-300'}`}>
                               {t.spare_parts_income > 0 ? formatCurrency(t.spare_parts_income) : '-'}
                             </td>
@@ -369,7 +345,6 @@ export default function TransactionsManager() {
                       <tr className="bg-gray-100/50 border-t-2 border-gray-200">
                         <td className="px-4 py-3"></td>
                         <td className="px-4 py-3 text-xs font-black text-gray-500 uppercase tracking-tighter">Subtotales Día</td>
-                        <td className="px-4 py-3 text-right font-black text-blue-800">{formatCurrency(subtotals.ar)}</td>
                         <td className="px-4 py-3 text-right font-black text-green-800">{formatCurrency(subtotals.spi)}</td>
                         <td className="px-4 py-3 text-right font-black text-emerald-800">{formatCurrency(subtotals.gi)}</td>
                         <td className="px-4 py-3 text-right font-black text-red-800">{formatCurrency(subtotals.we)}</td>
