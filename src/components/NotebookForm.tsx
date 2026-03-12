@@ -313,57 +313,69 @@ export default function NotebookForm({
               </button>
             </div>
 
-            <div className="space-y-3 bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-200">
-              {items.map((item, index) => {
-                const prev = items[index - 1];
-                const showKm = index === 0 || prev.date !== item.date;
-
-                return (
-                  <div key={index} className="flex gap-3 items-center bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="w-32">
-                      <input
-                        type="date"
-                        value={item.date}
-                        onChange={(e) => updateItem(index, 'date', e.target.value)}
-                        className="w-full bg-transparent outline-none px-2 py-1 text-xs font-semibold text-gray-500"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={item.description}
-                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                        placeholder="Descripción del trabajo o repuesto"
-                        className="w-full bg-transparent outline-none px-2 py-1 text-gray-700"
-                      />
-                    </div>
-                    <div className="w-32">
-                      {showKm && (
+            <div className="space-y-6 bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-200">
+              {Object.entries(
+                items.reduce((acc, item, index) => {
+                  const key = item.date;
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push({ ...item, originalIndex: index });
+                  return acc;
+                }, {} as Record<string, (ServiceItem & { originalIndex: number })[]>
+              ))
+                .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+                .map(([date, dayItems]) => (
+                  <div key={date} className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="date"
+                          value={date}
+                          onChange={(e) => {
+                            const newDate = e.target.value;
+                            dayItems.forEach(item => updateItem(item.originalIndex, 'date', newDate));
+                          }}
+                          className="bg-transparent border-none text-xs font-black text-gray-600 uppercase outline-none focus:ring-0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Kilómetros:</span>
                         <input
                           type="number"
-                          value={item.kilometers ?? ''}
-                          onChange={(e) =>
-                            updateKilometersForDate(
-                              item.date,
-                              Number(e.target.value)
-                            )
-                          }
-                          placeholder="Km"
-                          className="w-full bg-transparent outline-none px-2 py-1 text-xs font-semibold text-gray-500 text-right"
+                          value={dayItems[0].kilometers || ''}
+                          onChange={(e) => {
+                            const newKm = Number(e.target.value);
+                            dayItems.forEach(item => updateItem(item.originalIndex, 'kilometers', newKm));
+                          }}
+                          placeholder="km"
+                          className="w-24 bg-transparent border-b border-gray-300 text-xs font-bold text-gray-600 outline-none text-right px-1 focus:border-blue-500"
                         />
-                      )}
+                      </div>
                     </div>
-                    {items.length > 1 && (
-                      <button
-                        onClick={() => removeItem(index)}
-                        className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    )}
+                    <div className="divide-y divide-gray-50">
+                      {dayItems.map((item) => (
+                        <div key={item.originalIndex} className="flex gap-3 items-center px-4 py-3 group">
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(e) => updateItem(item.originalIndex, 'description', e.target.value)}
+                              placeholder="Descripción del trabajo o repuesto"
+                              className="w-full bg-transparent outline-none py-1 text-gray-700"
+                            />
+                          </div>
+                          {items.length > 1 && (
+                            <button
+                              onClick={() => removeItem(item.originalIndex)}
+                              className="text-red-300 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                );
-              })}
+                ))}
             </div>
           </div>
 
