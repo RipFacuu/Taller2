@@ -82,9 +82,19 @@ export default function NotebookForm({
   };
 
   const updateItem = (index: number, field: keyof ServiceItem, value: any) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setItems(newItems);
+    setItems(prevItems => {
+      const newItems = [...prevItems];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return newItems;
+    });
+  };
+
+  const updateItemsForDate = (date: string, field: keyof ServiceItem, value: any) => {
+    setItems(prevItems => {
+      return prevItems.map(item => 
+        item.date === date ? { ...item, [field]: value } : item
+      );
+    });
   };
 
   const updateKilometersForDate = (date: string, value: number) => {
@@ -156,8 +166,8 @@ export default function NotebookForm({
           description: item.description,
           amount: Number(item.amount) || 0,
           date: item.date,
-          order_index: index,
-          kilometers: Number(item.kilometers) || 0
+          kilometers: Number(item.kilometers) || 0,
+          order_index: index
         }));
 
       if (itemsToInsert.length > 0) {
@@ -331,8 +341,7 @@ export default function NotebookForm({
                           type="date"
                           value={date}
                           onChange={(e) => {
-                            const newDate = e.target.value;
-                            dayItems.forEach(item => updateItem(item.originalIndex, 'date', newDate));
+                            updateItemsForDate(date, 'date', e.target.value);
                           }}
                           className="bg-transparent border-none text-xs font-black text-gray-600 uppercase outline-none focus:ring-0"
                         />
@@ -343,8 +352,7 @@ export default function NotebookForm({
                           type="number"
                           value={dayItems[0].kilometers || ''}
                           onChange={(e) => {
-                            const newKm = Number(e.target.value);
-                            dayItems.forEach(item => updateItem(item.originalIndex, 'kilometers', newKm));
+                            updateItemsForDate(date, 'kilometers', Number(e.target.value));
                           }}
                           placeholder="km"
                           className="w-24 bg-transparent border-b border-gray-300 text-xs font-bold text-gray-600 outline-none text-right px-1 focus:border-blue-500"
